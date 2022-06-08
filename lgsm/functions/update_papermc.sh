@@ -11,11 +11,11 @@ local function_selfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 fn_update_papermc_dl(){
 	# get build info
-	builddata=$(curl -s "https://${remotelocation}/api/v2/projects/${paperproject}/versions/${paperversion}/builds/${remotebuild}" | jq '.downloads' )
+	builddata=$(curl -s "https://${remotelocation}/v2/projects/${paperproject}/versions/${paperversion}/builds/${remotebuild}" | jq '.downloads' )
 	buildname=$(echo -e "${builddata}" | jq -r '.application.name')
 	buildsha256=$(echo -e "${builddata}" | jq -r '.application.sha256')
 
-	fn_fetch_file "https://${remotelocation}/api/v2/projects/${paperproject}/versions/${paperversion}/builds/${remotebuild}/downloads/${buildname}" "" "" "" "${tmpdir}" "${buildname}" "nochmodx" "norun" "force" "${buildsha256}"
+	fn_fetch_file "https://${remotelocation}/v2/projects/${paperproject}/versions/${paperversion}/builds/${remotebuild}/downloads/${buildname}" "" "" "" "${tmpdir}" "${buildname}" "nochmodx" "norun" "force" "${buildsha256}"
 
 	echo -e "copying to ${serverfiles}...\c"
 	cp -f "${tmpdir}/${buildname}" "${serverfiles}/${executable#./}"
@@ -58,7 +58,7 @@ fn_update_papermc_localbuild(){
 
 fn_update_papermc_remotebuild(){
 	# Gets remote build info.
-	remotebuild=$(curl -s "https://${remotelocation}/api/v2/projects/${paperproject}/versions/${paperversion}" | jq -r '.builds[-1]')
+	remotebuild=$(curl -s "https://${remotelocation}/v2/projects/${paperproject}/versions/${paperversion}" | jq -r '.builds[-1]')
 
 	# Checks if remotebuild variable has been set.
 	if [ -z "${remotebuild}" ]||[ "${remotebuild}" == "null" ]; then
@@ -118,7 +118,7 @@ fn_update_papermc_compare(){
 }
 
 # The location where the builds are checked and downloaded.
-remotelocation="papermc.io"
+remotelocation="api.papermc.io"
 
 if [ "${shortname}" == "pmc" ]; then
 	paperproject="paper"
@@ -135,10 +135,10 @@ fi
 
 # check version if the user did set one and check it
 if [ "${mcversion}" == "latest" ]; then
-	paperversion=$(curl -s "https://${remotelocation}/api/v2/projects/${paperproject}" | jq -r '.versions[-1]')
+	paperversion=$(curl -s "https://${remotelocation}/v2/projects/${paperproject}" | jq -r '.versions[-1]')
 else
 	# check if version there for the download from the api
-	paperversion=$(curl -s "https://${remotelocation}/api/v2/projects/${paperproject}" | jq -r -e --arg mcversion "${mcversion}" '.versions[]|select(. == $mcversion)')
+	paperversion=$(curl -s "https://${remotelocation}/v2/projects/${paperproject}" | jq -r -e --arg mcversion "${mcversion}" '.versions[]|select(. == $mcversion)')
 	if [ -z "${paperversion}" ]; then
 		# user passed version does not exist
 		fn_print_error_nl "Version ${mcversion} not available from ${remotelocation}"
